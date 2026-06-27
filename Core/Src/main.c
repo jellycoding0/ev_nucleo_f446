@@ -99,8 +99,28 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  // [본론 1] 1단계: Peripheral 포트 클럭 활성화 (GPIOA 클럭 ON)
+  RCC->AHB1ENR |= (1 << 0);
+
+  // [본론 2] 2단계: GPIO 방향 모드 설정 (PA5 출력 모드: Clear & Set)
+  GPIOA->MODER &= ~(3 << (5 * 2)); // 10, 11번 비트 Clear (00)
+  GPIOA->MODER |= (1 << (5 * 2));  // 10, 11번 비트에 01 (Output) Set
+
+  // [본론 3] 3단계: 출력 형태 및 속도 안정화 세팅
+  GPIOA->OTYPER &= ~(1 << 5);       // Push-Pull 설정 (0)
+  GPIOA->OSPEEDR &= ~(3 << (5 * 2)); // Low Speed 설정 (00)
+
   while (1)
   {
+    // PA5 핀 HIGH 설정 (LED 켜기) 
+    // BSRR (Bit Set/Reset Register), PA5 핀을 HIGH로 만드려면 5번째 비트를 1로 
+    GPIOA->BSRR = (1 << 5);
+    for(volatile int i = 0; i < 500000; i++); // 딜레이 대략 0.1초
+
+    // PA5 핀 LOW 설정 (LED 끄기) 
+    // 21번째 비트에 '1'을 쓰면 PA5 핀이 즉시 LOW(0V) 
+    GPIOA->BSRR = (1 << (5 + 16));
+    for(volatile int i = 0; i < 500000; i++);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
