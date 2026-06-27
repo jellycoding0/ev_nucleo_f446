@@ -99,28 +99,34 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // [본론 1] 1단계: Peripheral 포트 클럭 활성화 (GPIOA 클럭 ON)
+  // 1. GPIOA 포트 클럭 활성화 및 PA5 출력/안정화 세팅 완료 상태
   RCC->AHB1ENR |= (1 << 0);
+  GPIOA->MODER &= ~(3 << (5 * 2));
+  GPIOA->MODER |= (1 << (5 * 2));
+  GPIOA->OTYPER &= ~(1 << 5);
+  GPIOA->OSPEEDR &= ~(3 << (5 * 2));
 
-  // [본론 2] 2단계: GPIO 방향 모드 설정 (PA5 출력 모드: Clear & Set)
-  GPIOA->MODER &= ~(3 << (5 * 2)); // 10, 11번 비트 Clear (00)
-  GPIOA->MODER |= (1 << (5 * 2));  // 10, 11번 비트에 01 (Output) Set
+  // 2. TIM6 클럭 활성화 (RCC APB1ENR 레지스터의 TIM6EN 비트 세트)
+  RCC->APB1ENR |= (1 << 4);
 
-  // [본론 3] 3단계: 출력 형태 및 속도 안정화 세팅
-  GPIOA->OTYPER &= ~(1 << 5);       // Push-Pull 설정 (0)
-  GPIOA->OSPEEDR &= ~(3 << (5 * 2)); // Low Speed 설정 (00)
+  // 3. TIM6 타이머 프리스케일러 감속 설정 (84MHz 클럭을 8400 분주하여 10kHz로 감속)
+  TIM6->PSC = 8400 - 1;
+
+  // 4. TIM6 자동 재로드 레지스터 값 보정 (ARR = 10000, 1초 최대 주기)
+  TIM6->ARR = 10000 - 1;
+
+  // 5. TIM6 타이머 동작 기동 (TIM6_CR1 레지스터의 CEN 비트 세트)
+  TIM6->CR1 |= (1 << 0);
 
   while (1)
   {
-    // PA5 핀 HIGH 설정 (LED 켜기) 
-    // BSRR (Bit Set/Reset Register), PA5 핀을 HIGH로 만드려면 5번째 비트를 1로 
-    GPIOA->BSRR = (1 << 5);
-    for(volatile int i = 0; i < 500000; i++); // 딜레이 대략 0.1초
-
-    // PA5 핀 LOW 설정 (LED 끄기) 
-    // 21번째 비트에 '1'을 쓰면 PA5 핀이 즉시 LOW(0V) 
-    GPIOA->BSRR = (1 << (5 + 16));
-    for(volatile int i = 0; i < 500000; i++);
+    // 6. 타이머 카운터(CNT) 직접 폴링 감시 (5000 카운트 = 500ms 경과 여부)
+    if (TIM6->CNT >= 5000)
+    {
+      // LED 토글 및 카운터 CNT 초기화
+      GPIOA->ODR ^= (1 << 5);
+      TIM6->CNT = 0;
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
