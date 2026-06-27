@@ -1,0 +1,39 @@
+# STM32CubeIDE build artifacts
+Debug/
+Release/
+*.elf
+*.map
+*.hex
+*.bin
+*.list
+*.size
+*.su
+*.d
+*.o
+
+# CMake build directories
+/build/
+/build_vscode/
+/out/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# STM32CubeMX project files (except .ioc configuration)
+.mxproject
+*.launch
+.settings/
+.project
+.cproject
+
+# IDE and Editor configs
+.vscode/
+.idea/
+*.suo
+*.user
+
+# 🚨 강사님 요청에 따른 수강생 매뉴얼 및 이미지 비공개 설정 (GitHub 업로드 방지)
+/DOC/
+/IMG/
+/*.md
