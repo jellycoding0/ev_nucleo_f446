@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +70,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  uint32_t count = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -106,27 +106,33 @@ int main(void)
   GPIOA->OTYPER &= ~(1 << 5);
   GPIOA->OSPEEDR &= ~(3 << (5 * 2));
 
-  // 2. TIM6 클럭 활성화 (RCC APB1ENR 레지스터의 TIM6EN 비트 세트)
+  // 2. TIM6 클럭 활성화, PSC 및 ARR 설정 완료 상태
   RCC->APB1ENR |= (1 << 4);
-
-  // 3. TIM6 타이머 프리스케일러 감속 설정 (84MHz 클럭을 8400 분주하여 10kHz로 감속)
   TIM6->PSC = 8400 - 1;
-
-  // 4. TIM6 자동 재로드 레지스터 값 보정 (ARR = 10000, 1초 최대 주기)
   TIM6->ARR = 10000 - 1;
-
-  // 5. TIM6 인터럽트 활성화 (TIM6_DIER 레지스터의 UIE 비트 세트)
   TIM6->DIER |= (1 << 0);
-
-  // 6. NVIC 컨트롤러 상에서 TIM6 인터럽트 채널(IRQ 54) 활성화
-  // IRQ 54는 ISER[1]의 22번째 비트 (54 - 32)
   NVIC->ISER[1] |= (1 << (54 - 32));
-
-  // 7. TIM6 타이머 동작 기동 (TIM6_CR1 레지스터의 CEN 비트 세트)
   TIM6->CR1 |= (1 << 0);
+
+  // 3. USART2 클럭 활성화 (RCC APB1ENR 레지스터의 USART2EN 비트 세트)
+  RCC->APB1ENR |= (1 << 17);
+
+  // 4. GPIOA PA2, PA3 핀을 USART2 Alternate Function 모드로 설정 (AF7)
+  GPIOA->MODER &= ~((3 << (2 * 2)) | (3 << (3 * 2)));
+  GPIOA->MODER |= ((2 << (2 * 2)) | (2 << (3 * 2))); // Alternate Function (10)
+  GPIOA->AFR[0] &= ~((0xF << (2 * 4)) | (0xF << (3 * 4)));
+  GPIOA->AFR[0] |= ((7 << (2 * 4)) | (7 << (3 * 4)));  // AF7 (USART2)
+
+  // 5. USART2 보레이트 설정 (APB1 42MHz 기준, 115200bps -> BRR = 0x16D)
+  USART2->BRR = 0x16D;
+
+  // 6. USART2 활성화 및 송신부 기동 (CR1 레지스터의 UE, TE 비트 세트)
+  USART2->CR1 |= ((1 << 13) | (1 << 3));
 
   while (1)
   {
+    printf("Register Test: %lu\r\n", count++);
+    for (volatile int i = 0; i < 2000000; i++);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -292,7 +298,15 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+int __io_putchar(int ch)
+{
+  // USART2 STATUS 레지스터의 TXE(송신 버퍼 빔) 플래그 대기
+  while (!(USART2->SR & (1 << 7)));
 
+  // 데이터 레지스터(DR)에 한 글자 기입
+  USART2->DR = (ch & 0xFF);
+  return ch;
+}
 /* USER CODE END 4 */
 
 /**
