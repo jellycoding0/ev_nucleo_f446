@@ -204,7 +204,15 @@ void SysTick_Handler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-
+  // TIM6의 Update Interrupt Flag 발생 여부 확인
+  if (TIM6->SR & (1 << 0))
+  {
+    TIM6->SR &= ~(1 << 0); // 🚨 인터럽트 클리어 필수! 안 하면 인터럽트 루프에 갇힘
+    
+    // GPIOA PA5 LED 토글
+    GPIOA->ODR ^= (1 << 5);
+  }
+  return; // HAL 핸들러 호출을 우회하기 위해 즉시 리턴
   /* USER CODE END TIM6_DAC_IRQn 0 */
   HAL_TIM_IRQHandler(&htim6);
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */

@@ -115,18 +115,18 @@ int main(void)
   // 4. TIM6 자동 재로드 레지스터 값 보정 (ARR = 10000, 1초 최대 주기)
   TIM6->ARR = 10000 - 1;
 
-  // 5. TIM6 타이머 동작 기동 (TIM6_CR1 레지스터의 CEN 비트 세트)
+  // 5. TIM6 인터럽트 활성화 (TIM6_DIER 레지스터의 UIE 비트 세트)
+  TIM6->DIER |= (1 << 0);
+
+  // 6. NVIC 컨트롤러 상에서 TIM6 인터럽트 채널(IRQ 54) 활성화
+  // IRQ 54는 ISER[1]의 22번째 비트 (54 - 32)
+  NVIC->ISER[1] |= (1 << (54 - 32));
+
+  // 7. TIM6 타이머 동작 기동 (TIM6_CR1 레지스터의 CEN 비트 세트)
   TIM6->CR1 |= (1 << 0);
 
   while (1)
   {
-    // 6. 타이머 카운터(CNT) 직접 폴링 감시 (5000 카운트 = 500ms 경과 여부)
-    if (TIM6->CNT >= 5000)
-    {
-      // LED 토글 및 카운터 CNT 초기화
-      GPIOA->ODR ^= (1 << 5);
-      TIM6->CNT = 0;
-    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
