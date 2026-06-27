@@ -94,15 +94,28 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
+  // 1. HAL 타이머 초기화 구조체 정보 수동 정정 (84MHz -> 10kHz 감속)
+  htim6.Init.Prescaler = 8400 - 1;
+  htim6.Init.Period = 10000 - 1; // 1초 최대 주기
 
+  // 2. 타이머 하드웨어 재초기화 및 레지스터 즉시 반영
+  HAL_TIM_Base_Init(&htim6);
+
+  // 3. TIM6 기본 타이머의 카운팅을 활성화합니다.
+  HAL_TIM_Base_Start(&htim6);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    HAL_Delay(500);
+    // TIM6의 카운터 값을 직접 폴링하여 주기적 작업 수행 (5000 카운트 = 500ms 경과)
+    if (__HAL_TIM_GET_COUNTER(&htim6) >= 5000)
+    {
+      // LED 토글 및 카운터 CNT 초기화
+      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+      __HAL_TIM_SET_COUNTER(&htim6, 0);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
