@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +70,7 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  uint32_t count = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -109,6 +109,8 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    printf("HAL Printf Test: %lu\r\n", count++);
+    HAL_Delay(1000); // 1초 블로킹 딜레이
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -281,6 +283,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   }
+}
+
+#ifdef __GNUC__
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif
+
+PUTCHAR_PROTOTYPE
+{
+  // 한 바이트(&ch)를 10ms 타임아웃 조건으로 USART2 송신
+  HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, 10);
+  return ch;
 }
 /* USER CODE END 4 */
 

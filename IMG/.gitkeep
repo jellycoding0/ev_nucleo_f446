@@ -1,0 +1,11 @@
+# 이 폴더는 프로젝트 루트에 위치한 매뉴얼용 스크린샷 이미지 보관 폴더입니다.
+# 수강생용 스크린샷 이미지를 캡처하여 아래 파일명으로 교체해 넣어주시면 매뉴얼에 자동 반영됩니다:
+# - vscode_git_graph_extension.png
+# - powershell_path_setup.png
+# - cubemx_NUCLEO-F446RE_select.png
+# - cubemx_tim6_setting.png
+# - cubemx_uart_setting.png
+# - cubemx_gpio_setting.png
+# - cubemx_project_manager.png
+# - cubeide_import.png
+# - cubeide_build_debug.png
