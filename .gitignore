@@ -33,7 +33,11 @@ Makefile
 *.suo
 *.user
 
-# 🚨 강사님 요청에 따른 수강생 매뉴얼 및 이미지 비공개 설정 (GitHub 업로드 방지)
+# Documentation and references
 /DOC/
 /*.md
 
+# Course scripts and local environment variables
+/SCRIPT/
+/*.md
+*.env
